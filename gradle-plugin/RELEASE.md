@@ -6,7 +6,7 @@
 ## 0.6
 + Added support for VFS-backed repositories
 + [Support for Gradle 2.0 API](https://github.com/ysb33r/groovy-vfs/issues/30)
-
++ Dependent on Groovy VFS JAR instead of rolling own version of groovy-vfs
 
 ## 0.5.1
 + [Support new Gradle plugin namespace org.ysb33r.vfs](https://github.com/ysb33r/groovy-vfs/issues/31)
