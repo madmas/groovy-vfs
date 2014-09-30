@@ -1,3 +1,14 @@
+// ============================================================================
+// (C) Copyright Schalk W. Cronje 2014
+//
+// This software is licensed under the Apache License 2.0
+// See http://www.apache.org/licenses/LICENSE-2.0 for license details
+//
+// Unless required by applicable law or agreed to in writing, software distributed under the License is
+// distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and limitations under the License.
+//
+// ============================================================================
 package org.ysb33r.gradle.vfs.internal.repository
 
 import groovy.transform.CompileDynamic
@@ -209,48 +220,6 @@ class VfsRepositoryTransport implements RepositoryTransport, ExternalResourceRep
             throw new IOException("Could not list content of ${parent}",e)
         }
     }
-
-//    @Override
-//    LocallyAvailableExternalResource getResource(
-//            URI source,
-//            CacheAwareExternalResourceAccessor.ResourceFileStore fileStore,
-//            @Nullable LocallyAvailableResourceCandidates localCandidates
-//    ) throws IOException {
-//        try {
-////            public interface LocallyAvailableResourceCandidates {
-////
-////                boolean isNone();
-////
-////                LocallyAvailableResource findByHashValue(HashValue hashValue);
-////
-////            }
-//            FileObject fo = vfs.resolveURI(source)
-//
-//            if(!localCandidates.isNone()) {
-//                LocallyAvailableResource lar = localCandidates.findByHashValue('foo')
-//                if(null!=lar) {return lar}
-//            }
-//            (this.getResource(source) as VfsExternalResource).downloadNow()
-//
-//            throw new IOException("NOT IMPLEMENTED YET")
-//        } catch (final Exception e) {
-//            throw new IOException("Could not obtain resource ${source}",e)
-//        }
-//    }
-//
-//    class ResourceFileStore implements CacheAwareExternalResourceAccessor.ResourceFileStore {
-//
-//        /**
-//         * Called when a resource is to be cached. Should *move* the given file into the
-//         * appropriate location and return a handle to the file.
-//         */
-//        @Override
-//        LocallyAvailableResource moveIntoCache(File downloadedResource) {
-//            org.apache.commons.io.FileUtils.moveFileToDirectory(downloadedResource,,true)
-//            throw new IOException("NOT IMPLEMENTED YET")
-//            return null
-//        }
-//    }
 
     @CompileDynamic
     @groovy.transform.PackageScope
