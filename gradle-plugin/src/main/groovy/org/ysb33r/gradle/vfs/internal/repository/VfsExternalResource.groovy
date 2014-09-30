@@ -121,7 +121,7 @@ class VfsExternalResource implements LocallyAvailableExternalResource {
     ExternalResourceMetaData getMetaData() {
         new VfsExternalResourceMetaData(
             location : getURI(),
-            lastModified: vfsFileObject.content.lastModifiedTime,
+            lastModified: new Date(vfsFileObject.content.lastModifiedTime),
             contentLength: getContentLength()
         )
     }

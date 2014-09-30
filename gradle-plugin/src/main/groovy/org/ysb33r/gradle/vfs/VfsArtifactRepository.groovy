@@ -17,8 +17,10 @@ import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.gradle.api.*
 import org.gradle.api.artifacts.repositories.*
+import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.ConfiguredModuleComponentRepository
 import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.strategy.ResolverStrategy
 import org.gradle.api.internal.artifacts.metadata.ModuleVersionArtifactMetaData
+import org.gradle.api.internal.artifacts.repositories.ResolutionAwareRepository
 import org.gradle.api.internal.artifacts.repositories.resolver.IvyResolver
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.resource.local.FileStore
@@ -27,23 +29,21 @@ import org.gradle.util.CollectionUtils
 import org.ysb33r.gradle.vfs.internal.repository.VfsRepositoryTransport
 
 @CompileStatic
-class VfsArtifactRepository implements ArtifactRepository {
-    String name
-    String url
+class VfsArtifactRepository implements ArtifactRepository,ResolutionAwareRepository {
 
     VfsArtifactRepository(
         Project project,
         FileResolver fileResolver,
         PasswordCredentials passwordCredentials,
-        LocallyAvailableResourceFinder<ModuleVersionArtifactMetaData> locallyAvailableResourceFinder, //DefaultModuleVersionArtifactMetaData
+        LocallyAvailableResourceFinder<ModuleVersionArtifactMetaData> locallyAvailableResourceFinder,
         ResolverStrategy resolverStrategy,
         FileStore artifactFileStore
     ) {
         File root=new File(project.gradle.startParameter.projectCacheDir,'vfs')
         this.project = project
         this.fileResolver = fileResolver
-        this.locallyAvailableResourceFinder = locallyAvailableResourceFinder //new PatternBasedLocallyAvailableResourceFinder(root,)
-        this.resolverStrategy = resolverStrategy // ResolverStrategy()
+        this.locallyAvailableResourceFinder = locallyAvailableResourceFinder
+        this.resolverStrategy = resolverStrategy
         this.artifactFileStore = artifactFileStore //new VfsFileStore( root, project.logger )
         this.passwordCredentials = passwordCredentials
     }
@@ -57,8 +57,13 @@ class VfsArtifactRepository implements ArtifactRepository {
         patterns.add(pat.toString())
     }
 
-    @PackageScope
-    IvyResolver createResolver() {
+    void url(final String u) { this.url=u }
+
+    String getUrl() { this.url }
+
+    void name(final String n) {this.name=n}
+
+    ConfiguredModuleComponentRepository/*IvyResolver*/ createResolver() {
         validate()
 
         def resolver = new IvyResolver(
@@ -76,7 +81,7 @@ class VfsArtifactRepository implements ArtifactRepository {
             resolver.addArtifactLocation(uri, '/[artifact]-[revision](-[classifier]).[ext]')
         } else {
             patterns.each { String it ->
-                resolver.addArtifactLocation(uri, it)
+                resolver.addArtifactLocation(uri, '/'+it)
             }
         }
 
@@ -99,8 +104,8 @@ class VfsArtifactRepository implements ArtifactRepository {
     @PackageScope
     List<String> patterns = []
 
-
-
+    String name
+    private String url
     private Project project
     private FileResolver fileResolver
     private LocallyAvailableResourceFinder locallyAvailableResourceFinder
@@ -108,104 +113,5 @@ class VfsArtifactRepository implements ArtifactRepository {
     private FileStore artifactFileStore
     private PasswordCredentials passwordCredentials
 
-//    @CompileDynamic
-//    static VfsArtifactRepository create( Project project,Closure cfg ) {
-//        def repo = new VfsArtifactRepository(project)
-//        def c = cfg.clone()
-//        c.delegate = repo
-//        c()
-//
-//        repo.validate()
-//    }
-
-//    static VfsArtifactRepository create(Action<? super VfsArtifactRepository> action) {
-//
-//    }
-
-//    @CompileDynamic
-//    static VfsArtifactRepository addTo( RepositoryHandler rh, def action ) {
-//        VfsArtifactRepository repo = create(action)
-//        rh.add( repo )
-//        repo
-//    }
 }
 
-/*
-
-    public IvyResolver(
-        String name,
-        RepositoryTransport transport,
-        LocallyAvailableResourceFinder<ModuleComponentArtifactMetaData> locallyAvailableResourceFinder,
-                       boolean dynamicResolve,
-                       ResolverStrategy resolverStrategy,
-                       FileStore<ModuleComponentArtifactMetaData> artifactFileStore)
-
-
-public class DefaultFlatDirArtifactRepository extends AbstractArtifactRepository implements FlatDirectoryArtifactRepository, ResolutionAwareRepository, PublicationAwareRepository {
-    private final FileResolver fileResolver;
-    private List<Object> dirs = new ArrayList<Object>();
-    private final RepositoryTransportFactory transportFactory;
-    private final LocallyAvailableResourceFinder<ModuleComponentArtifactMetaData> locallyAvailableResourceFinder;
-    private final ResolverStrategy resolverStrategy;
-    private final FileStore<ModuleComponentArtifactMetaData> artifactFileStore;
-
-    public DefaultFlatDirArtifactRepository(FileResolver fileResolver,
-                                            RepositoryTransportFactory transportFactory,
-                                            LocallyAvailableResourceFinder<ModuleComponentArtifactMetaData> locallyAvailableResourceFinder,
-                                            ResolverStrategy resolverStrategy,
-                                            FileStore<ModuleComponentArtifactMetaData> artifactFileStore) {
-        this.fileResolver = fileResolver;
-        this.transportFactory = transportFactory;
-        this.locallyAvailableResourceFinder = locallyAvailableResourceFinder;
-        this.resolverStrategy = resolverStrategy;
-        this.artifactFileStore = artifactFileStore;
-    }
-
-    public Set<File> getDirs() {
-        return fileResolver.resolveFiles(dirs).getFiles();
-    }
-
-    public void setDirs(Iterable<?> dirs) {
-        this.dirs = Lists.newArrayList(dirs);
-    }
-
-    public void dir(Object dir) {
-        dirs(dir);
-    }
-
-    public void dirs(Object... dirs) {
-        this.dirs.addAll(Arrays.asList(dirs));
-    }
-
-    public ModuleVersionPublisher createPublisher() {
-        return createRealResolver();
-    }
-
-    public ConfiguredModuleComponentRepository createResolver() {
-        return createRealResolver();
-    }
-
-    private IvyResolver createRealResolver() {
-        Set<File> dirs = getDirs();
-        if (dirs.isEmpty()) {
-            throw new InvalidUserDataException("You must specify at least one directory for a flat directory repository.");
-        }
-
-        IvyResolver resolver = new IvyResolver(
-            getName(),
-            transportFactory.createTransport("file", getName(), null),
-            locallyAvailableResourceFinder,
-            false,
-            resolverStrategy,
-            artifactFileStore);
-
-        for (File root : dirs) {
-            resolver.addArtifactLocation(root.toURI(), "/[artifact]-[revision](-[classifier]).[ext]");
-            resolver.addArtifactLocation(root.toURI(), "/[artifact](-[classifier]).[ext]");
-        }
-        return resolver;
-    }
-
-}
-
- */

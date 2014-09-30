@@ -49,11 +49,8 @@ class VfsRepositoryTransport implements RepositoryTransport, ExternalResourceRep
             logger : LogFactory.getLog('vfs'),
             temporaryFileStore : "${project.gradle.startParameter.projectCacheDir}/vfs/${FileUtils.toSafeFileName(name)}"
         )
-//        GradleInternal gradle = project.gradle as GradleInternal
-        def gradleServices = (project.gradle as GradleInternal).services
 
-//        gradle.services.get(DefaultCacheLockingManager.class)
-        //project.gradle.startParameter.projectCacheDir
+        def gradleServices = (project.gradle as GradleInternal).services
         BuildCommencedTimeProvider bctp = new BuildCommencedTimeProvider()
 
         def mapping= new DefaultCacheScopeMapping(
@@ -77,49 +74,6 @@ class VfsRepositoryTransport implements RepositoryTransport, ExternalResourceRep
                 tempFiles,
                 lockMgr
         )
-//        new DefaultCacheLockingManager(
-//                new DefaultCacheRepository(
-//                        new DefaultCacheScopeMapping(
-//                                project.gradle.startParameter.gradleUserHomeDir,
-//                                project.gradle.startParameter.projectCacheDir,
-//                                project.gradle.gradleVersion
-//                        ),
-//                        new DefaultCacheFactory(
-//                                new DefaultFileLockManager()
-//                        )
-//                )
-//        )
-//        resourceAccessor= gradle.services.get(CacheAwareExternalResourceAccessor)
-//        resourceAccessor = new DefaultCacheAwareExternalResourceAccessor(this,
-//                new ByUrlCachedExternalResourceIndex(
-//                        'persistentCacheFile',bctp,gradle.services.get(DefaultCacheLockingManager.class)
-//                        ),
-//                bctp,
-//                gradle.services.get(DefaultTemporaryFileProvider.class),
-//                gradle.services.get(DefaultCacheLockingManager.class)
-//        )
-
-//         resourceAccessor = new DefaultCacheAwareExternalResourceAccessor(
-// this,
-// cachedExternalResourceIndex,
-// bctp,
-// gradle.services.get(DefaultTemporaryFileProvider.class),
-// cacheLockingManager);
-
-//        ProgressLoggerFactory progressLoggerFactory,
-//                              TemporaryFileProvider temporaryFileProvider,
-//        CachedExternalResourceIndex<String> cachedExternalResourceIndex,
-//                                            BuildCommencedTimeProvider timeProvider,
-//        CacheLockingManager cacheLockingManager)
-// {
-//            super(name);
-//            HttpClientHelper http = new HttpClientHelper(new DefaultHttpSettings(credentials));
-//            HttpResourceAccessor accessor = new HttpResourceAccessor(http);
-//            HttpResourceUploader uploader = new HttpResourceUploader(http);
-//         ProgressLoggingExternalResourceAccessor loggingAccessor = new ProgressLoggingExternalResourceAccessor(
-// accessor, progressLoggerFactory);
-
-
     }
 
     @Override
@@ -182,7 +136,7 @@ class VfsRepositoryTransport implements RepositoryTransport, ExternalResourceRep
     @Override
     void put(File source, URI destination) throws IOException {
         try {
-            vfs.cp source,destination, overwrite : true, recursive : false
+            vfs.cp source,destination.toString(), overwrite : true, recursive : false
         } catch (final Exception e) {
             throw new IOException("Could not push ${source.absolutePath} to ${destination}",e)
         }
@@ -240,13 +194,13 @@ class VfsRepositoryTransport implements RepositoryTransport, ExternalResourceRep
     @CompileDynamic
     List<String> list(URI parent) throws IOException {
         try {
-            FileObject parentFile = vfs.resolveURI(parent)
+            FileObject parentFile = vfs.resolveURI(parent.toString())
             if(!parentFile.exists() || parentFile.fileSystem.hasCapability(Capability.LIST_CHILDREN)) {
                 return null
             }
 
             List<String> contents = []
-            vfs.ls(parent) { FileObject fo ->
+            vfs.ls(parent.toString()) { FileObject fo ->
                 contents << fo.name.baseName
             }
             return contents
@@ -301,20 +255,12 @@ class VfsRepositoryTransport implements RepositoryTransport, ExternalResourceRep
     @CompileDynamic
     @groovy.transform.PackageScope
     VfsExternalResource getVfsExternalResource(URI source,boolean download) {
-        FileObject fo = vfs.resolveURI(source)
+        FileObject fo = vfs.resolveURI(source.toString())
         fo.exists() ?  new VfsExternalResource(vfs,fo,download:download) : null
 
     }
+
     private VFS vfs
     private CacheAwareExternalResourceAccessor resourceAccessor
 
 }
-/*
-public DefaultCacheAwareExternalResourceAccessor(ExternalResourceAccessor delegate, CachedExternalResourceIndex<String> cachedExternalResourceIndex, BuildCommencedTimeProvider timeProvider, TemporaryFileProvider temporaryFileProvider, CacheLockingManager cacheLockingManager) {
-    this.delegate = delegate;
-    this.cachedExternalResourceIndex = cachedExternalResourceIndex;
-    this.timeProvider = timeProvider;
-    this.temporaryFileProvider = temporaryFileProvider;
-    this.cacheLockingManager = cacheLockingManager;
-}
-*/

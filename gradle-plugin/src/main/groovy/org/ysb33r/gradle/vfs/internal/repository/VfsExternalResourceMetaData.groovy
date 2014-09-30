@@ -1,5 +1,6 @@
 package org.ysb33r.gradle.vfs.internal.repository
 
+import groovy.transform.CompileStatic
 import groovy.transform.TupleConstructor
 import org.gradle.internal.hash.HashValue
 import org.gradle.internal.resource.metadata.ExternalResourceMetaData
@@ -7,30 +8,13 @@ import org.gradle.internal.resource.metadata.ExternalResourceMetaData
 /**
  * @author Schalk W. Cronjé.
  */
+@CompileStatic
 @TupleConstructor
-class VfsExternalResourceMetaData implements ExternalResourceMetaData {
+class VfsExternalResourceMetaData implements ExternalResourceMetaData, Serializable {
 
     URI location
     Date lastModified
     long contentLength = -1
-
-//    @Override
-//    URI getLocation() {
-//        return null
-//    }
-//
-//    @Override
-//    Date getLastModified() {
-//        return null
-//    }
-//
-//    /**
-//     * Returns -1 when the content length is unknown.
-//     */
-//    @Override
-//    long getContentLength() {
-//        return 0
-//    }
 
     /**
      * Some kind of opaque checksum that was advertised by the remote “server”.
