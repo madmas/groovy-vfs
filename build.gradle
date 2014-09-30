@@ -43,7 +43,7 @@ subprojects {
         maven {  url 'https://oss.jfrog.org/artifactory/repo' }
     }
     
-    version = '0.5.1'
+    version = '0.6.0'
 
     ext {
         bintrayRepo = 'grysb33r'

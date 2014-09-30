@@ -11,4 +11,8 @@ dsl/.*
 .DS_Store
 .gradle
 .build
+.idea
+*.iml
+*.imi
 build
+

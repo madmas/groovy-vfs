@@ -1,19 +1,26 @@
 package org.ysb33r.gradle.vfs.internal.repository
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.apache.commons.vfs2.FileObject
 import org.gradle.api.Action
 import org.gradle.api.Transformer
+import org.gradle.internal.hash.HashUtil
+import org.gradle.internal.hash.HashValue
 import org.gradle.internal.resource.ExternalResource
+import org.gradle.internal.resource.LocallyAvailableExternalResource
+import org.gradle.internal.resource.local.LocallyAvailableResource
 import org.gradle.internal.resource.metadata.ExternalResourceMetaData
-import org.ysb33r.gradle.vfs.VfsExternalResourceMetaData
 import org.ysb33r.groovy.dsl.vfs.VFS
 
 /**
  * @author Schalk W. Cronjé.
  */
-class VfsExternalResource implements ExternalResource {
+@CompileStatic
+class VfsExternalResource implements LocallyAvailableExternalResource {
 
-    VfsExternalResource( VFS vfs, FileObject fo ) {
+    @CompileDynamic
+    VfsExternalResource( properties=[:], VFS vfs, FileObject fo ) {
         this.vfs = vfs
         vfsFileObject = fo
     }
@@ -41,7 +48,7 @@ class VfsExternalResource implements ExternalResource {
      */
     @Override
     long getContentLength() {
-        vfsFileObject.content.size()
+        vfsFileObject.content.size
     }
 
     /**
@@ -72,7 +79,7 @@ class VfsExternalResource implements ExternalResource {
     @Override
     void writeTo(OutputStream destination) throws IOException {
         try {
-            vfs.cat (vfsFileObject) { is ->
+            vfs.cat (vfsFileObject) { InputStream is ->
                 destination << is
             }
         } catch (final Exception e) {
@@ -110,6 +117,7 @@ class VfsExternalResource implements ExternalResource {
      * Returns the meta-data for this resource.
      */
     @Override
+    @CompileDynamic
     ExternalResourceMetaData getMetaData() {
         new VfsExternalResourceMetaData(
             location : getURI(),
@@ -118,6 +126,28 @@ class VfsExternalResource implements ExternalResource {
         )
     }
 
+    @Override
+    @CompileDynamic
+    LocallyAvailableResource getLocalResource() {
+        if(downloaded == null) {
+//            File tmp = new File('BASEDIR') ????
+//            downloaded =
+        }
+        def md = this.metaData
+        File downloaded
+        HashValue sha1 = HashUtil.sha1(downloaded)
+        [
+            getFile : { -> downloaded },
+            getSha1 : { -> sha1 },
+            getLastModified : { -> md.lastModified },
+            getContentLength : { -> downloaded.size }
+
+        ] as LocallyAvailableResource
+    }
+
     private VFS vfs
     private FileObject vfsFileObject
+    private File downloaded = null
+
 }
+

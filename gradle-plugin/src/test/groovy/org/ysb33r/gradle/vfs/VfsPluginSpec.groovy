@@ -12,6 +12,8 @@
 
 package org.ysb33r.gradle.vfs
 
+import org.gradle.api.InvalidUserDataException
+
 import java.io.File;
 
 import spock.lang.*
@@ -21,27 +23,28 @@ import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder
 import org.apache.commons.vfs2.FileSystemOptions
 import org.ysb33r.groovy.dsl.vfs.URI
 
-class VfsSpec extends spock.lang.Specification {
+class VfsPluginSpec extends spock.lang.Specification {
     File testFsReadOnlyRoot = new File("${System.getProperty('TESTFSREADROOT')}/src/test/resources/test-files")
     String testFsURI = new URI(testFsReadOnlyRoot).toString()
     File testFsWriteRoot= new File( "${System.getProperty('TESTFSWRITEROOT') ?: 'build/tmp/test-files'}/file")
     String testFsWriteURI= new URI(testFsWriteRoot).toString()
     Project project = ProjectBuilder.builder().build()
     
-    
+    void setup() {
+        testFsWriteRoot.deleteDir()
+        project.apply plugin:'org.ysb33r.vfs'
+    }
+
     def "Can apply Vfs plugin to project"() {
-        given:
-            project.apply plugin:'org.ysb33r.vfs'
-        
         expect:
             project.__vfs instanceof org.ysb33r.groovy.dsl.vfs.VFS
+            project.repositories.metaClass.vfs != null
     }
     
     def "Must be able to set vfs style properties via a configuration-style block"() {
-        FtpFileSystemConfigBuilder fscb
-        
+
         given:
-            project.apply plugin:'org.ysb33r.vfs'
+            FtpFileSystemConfigBuilder fscb
             fscb = project.__vfs.fsMgr.getFileSystemConfigBuilder('ftp') as FtpFileSystemConfigBuilder
             fscb.setPassiveMode( project.__vfs.defaultFSOptions, false)
             project.vfs {
@@ -58,10 +61,8 @@ class VfsSpec extends spock.lang.Specification {
     
     def "Calling VFS closures should execute immediately"() {
         
-        Integer count= 0
         given:
-            testFsWriteRoot.deleteDir()
-            project.apply plugin:'org.ysb33r.vfs'
+            Integer count= 0
             project.vfs {
                 cp testFsURI,"${testFsWriteURI}/one/two/three", recursive:true
             }
@@ -74,6 +75,27 @@ class VfsSpec extends spock.lang.Specification {
         expect:
           count == 4
         
+    }
+
+    def "Trying to add a vfs repository without a url will throw an exception"() {
+        when:
+            project.repositories {
+                vfsRoot {
+                }
+            }
+        then:
+            thrown(InvalidUserDataException)
+    }
+
+    def "Must be able to add a vfs repository"() {
+        when:
+            project.repositories {
+                vfsRoot {
+                    url = "file://${project.buildDir.absolutePath}"
+                }
+            }
+        then:
+            project.repositories.withType(VfsArtifactRepository).size() != 0
     }
 }
 
