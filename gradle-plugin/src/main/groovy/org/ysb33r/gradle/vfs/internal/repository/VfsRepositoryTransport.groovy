@@ -58,7 +58,7 @@ class VfsRepositoryTransport implements RepositoryTransport, ExternalResourceRep
     VfsRepositoryTransport(Project project,final String name) {
         vfs = new VFS (
             logger : LogFactory.getLog('vfs'),
-            temporaryFileStore : "${project.gradle.startParameter.projectCacheDir}/vfs/${FileUtils.toSafeFileName(name)}"
+            temporaryFileStore : "${project.gradle.startParameter.projectCacheDir}/vfs/${FileUtils.toSafeFileName(name)}".toString()
         )
 
         def gradleServices = (project.gradle as GradleInternal).services

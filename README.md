@@ -62,12 +62,12 @@ vfs {
 ```
 
 
-Gradle plugin (EXPERIMENTAL)
-=============
+# Gradle plugin
 
-It is now possible to use this in Gradle as an extension to the project class.
-The interface is very experimental and may change without much warning in future
-releases of this plugin.
+
+## Project extension
+
+VFS can be used in Gradle as an extension to the project class.
 
 ```groovy
 
@@ -106,6 +106,39 @@ vfs {
 ```
 
 If you want to see what VFS is going run gradle with --debug
+
+## VFS-based repository
+
+There are days when you work with environments that simply does not fit with any repository support that ships with Gradle.
+For those days the new VFS repository definitions might just be what you need.
+The interface is very experimental and may change without much warning in future releases of this plugin. It is only applicable
+for `repository` definitions in the main build section. It WILL NOT work inside the `buildscript` closure.
+
+It can be used with any of the protocols that `groovy-vfs` supports. It does not do any dependency checking as you would
+expect from Maven or Ivy. In reality it is closer in nature to the `flatDir` repository that Gradle offers, expect that
+it works with remote servers and is more flexible in what it offers in terms of layouts.
+
+Below is an example of pulling ZIP packages straight from Github.
+
+```groovy
+repositories {
+  vfsRoot {    
+    name 'Generic Github'
+    url 'https://github.com'
+    // Standard Ivy patterns are all supported.
+    pattern '[organisation]/[module]/archive/[revision].zip'
+  }
+}
+
+configurations {
+  myCfg
+}
+
+// It can be made to work in the same way as any other dependency
+dependencies {
+  myCfg 'imakewebthings:deck.js:master'
+}
+```
 
 Documentation
 =============
