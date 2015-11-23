@@ -42,8 +42,8 @@ subprojects {
 
     buildscript {
         repositories {
-            jcenter()
             mavenLocal()
+            jcenter()
         }
         dependencies {
             classpath 'org.ysb33r.gradle:bintray:1.6'

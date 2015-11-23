@@ -15,7 +15,7 @@ repositories {
         //     For Milton.io WebDav server
         maven {
             name 'ettrema-repo'
-            url 'http://milton.io/maven'
+            url 'http://milton.io/maven/'
         }
 }
 
@@ -24,8 +24,8 @@ dependencies {
 
     compile "org.apache.ftpserver:ftpserver-core:1.0.6"
 //    compile "org.apache.jackrabbit:jackrabbit-standalone:${jackrabbitVer}"
-     compile "io.milton:milton-api:2.4.1.2"
-     compile "io.milton:milton-server-ce:2.4.1.2"
+     compile "io.milton:milton-api:2.7.1.3"
+     compile "io.milton:milton-server-ce:2.7.1.3"
 
 //    compile "org.eclipse.jetty:jetty-server:${jettyVer}"
 //    compile "org.eclipse.jetty:jetty-servlet:${jettyVer}"
