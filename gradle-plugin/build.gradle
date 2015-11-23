@@ -42,6 +42,14 @@ ext {
 
 configurations.all { exclude module: 'groovy-all' }
 
+repositories{
+    maven {
+        //     For Milton.io WebDav server; required here to resolve transitive deps from :test-servers dependecy
+        name 'ettrema-repo'
+        url 'http://milton.io/maven/'
+    }
+}
+
 dependencies {
     compile dslProject
 //    compile project( path:':dsl',configuration:'default')
