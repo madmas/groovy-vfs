@@ -46,7 +46,7 @@ class WebdavServer {
         }
 
         logFile = new File(logDir,'access/yyyy_mm_dd.request.log')
-\        FileSystemResourceFactory resourceFactory = new FileSystemResourceFactory(
+        FileSystemResourceFactory resourceFactory = new FileSystemResourceFactory(
             homeFolder,
             new NullSecurityManager(),
             "/"
